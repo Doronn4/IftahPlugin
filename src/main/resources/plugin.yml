@@ -1,0 +1,5 @@
+name: DoronMC
+version: '${project.version}'
+main: me.doron.doronmc.DoronMC
+api-version: 1.19
+description: Doron's minecraft plugin
