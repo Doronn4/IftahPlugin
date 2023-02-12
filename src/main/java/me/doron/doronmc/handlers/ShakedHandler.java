@@ -96,7 +96,7 @@ public class ShakedHandler implements Listener {
                     public void run() {
                         player.teleport(current);
                     }
-                }.runTaskLater(Bukkit.getPluginManager().getPlugin("EpicServerPlugin"), 200);
+                }.runTaskLater(Bukkit.getPluginManager().getPlugin("DoronMC"), 200);
             }
         }
     }

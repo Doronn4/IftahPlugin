@@ -1,6 +1,10 @@
 package me.doron.doronmc.handlers;
 
 import me.doron.doronmc.util.ItemStackUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -35,7 +39,7 @@ public class CommandKit implements CommandExecutor {
         egg.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, 10);
         ItemMeta metaEgg = egg.getItemMeta();
         metaEgg.setDisplayName("E G G");
-        egg.setItemMeta(meta);
+        egg.setItemMeta(metaEgg);
         liamKit[1] = egg;
         kits.put("liam", liamKit);
 
@@ -46,6 +50,49 @@ public class CommandKit implements CommandExecutor {
         hiking_boots.setItemMeta(metaBoots);
         shakedKit[0] = hiking_boots;
         kits.put("shaked", shakedKit);
+
+        ItemStack[] gabzoKit = new ItemStack[1];
+
+        ItemStack staff = new ItemStack(Material.STICK, 1);
+        staff.addUnsafeEnchantment(Enchantment.KNOCKBACK, 10);
+        ItemMeta staffMeta = staff.getItemMeta();
+        TextComponent gabzoText = Component.text("3108")
+                .color(NamedTextColor.GOLD);
+        staffMeta.displayName(gabzoText);
+        staff.setItemMeta(staffMeta);
+        gabzoKit[0] = staff;
+        kits.put("gabzo", gabzoKit);
+
+        ItemStack[] mamanKit = new ItemStack[1];
+        ItemStack skull = new ItemStack(Material.SKELETON_SKULL, 1);
+        skull.addUnsafeEnchantment(Enchantment.LUCK, 10);
+        ItemMeta skullMeta = skull.getItemMeta();
+        TextComponent mamanText = Component.text("SKULL MODE")
+                .color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC);
+        skullMeta.displayName(mamanText);
+        skull.setItemMeta(skullMeta);
+        mamanKit[0] = skull;
+        kits.put("maman", mamanKit);
+
+        ItemStack[] itamarKit = new ItemStack[1];
+        ItemStack book = new ItemStack(Material.BOOK, 1);
+        book.addUnsafeEnchantment(Enchantment.THORNS, 10);
+        ItemMeta bookMeta = book.getItemMeta();
+        TextComponent itamarText = Component.text("תנ\"ך").color(NamedTextColor.RED).decorate(TextDecoration.BOLD).decorate(TextDecoration.ITALIC);
+        bookMeta.displayName(itamarText);
+        book.setItemMeta(bookMeta);
+        itamarKit[0] = book;
+        kits.put("itamar", itamarKit);
+
+        ItemStack[] doronKit = new ItemStack[1];
+        ItemStack helmet = new ItemStack(Material.LEATHER_HELMET, 1);
+        helmet.addUnsafeEnchantment(Enchantment.MENDING, 10);
+        ItemMeta helmetMeta = helmet.getItemMeta();
+        TextComponent doronText = Component.text("Cipher Hat").color(NamedTextColor.GREEN).decorate(TextDecoration.ITALIC);
+        helmetMeta.displayName(doronText);
+        helmet.setItemMeta(helmetMeta);
+        doronKit[0] = helmet;
+        kits.put("doron", doronKit);
     }
 
     @Override
@@ -69,6 +116,8 @@ public class CommandKit implements CommandExecutor {
                 equip.setChestplate(item);
             else if (ItemStackUtils.isLeggings(item))
                 equip.setLeggings(item);
+            else if (ItemStackUtils.isHelmet(item))
+                equip.setHelmet(item);
             else
                 inv.addItem(item);
         }

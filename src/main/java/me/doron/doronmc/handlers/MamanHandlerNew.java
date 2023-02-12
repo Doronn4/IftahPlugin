@@ -1,5 +1,7 @@
 package me.doron.doronmc.handlers;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -20,7 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class MamanHandlerNew implements Listener {
-    private final String USERNAME = "ProBooster";
+    private final String USERNAME = "Arielmaman";
     private final String HORSE_NAME = "jaquavious";
     private final double COOLDOWN = 30 * 20;
     private final double SPEED = 0.8;
@@ -106,9 +108,12 @@ public class MamanHandlerNew implements Listener {
             skullHorse.getInventory().setContents(horse.getInventory().getContents());
             skullHorse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(SPEED);
             skullHorse.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, Integer.MAX_VALUE, 1));
+            skullHorse.customName(Component.text(COOL_NAME)
+                    .color(NamedTextColor.GREEN));
 
             horse.remove();
             skullHorse.addPassenger(player);
+            player.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, skullHorse.getLocation(), 1);
 
             new BukkitRunnable() {
                 @Override
@@ -137,7 +142,9 @@ public class MamanHandlerNew implements Listener {
 
         Vector lookDirection = player.getEyeLocation().getDirection();
         Vector behindVector = lookDirection.multiply(-3);
-        Location behindLocation = horse.getLocation().add(behindVector).subtract(0, 1, 0);
+        Location behindLocation = horse.getLocation().add(behindVector);
+
+        player.getWorld().spawnParticle(Particle.LAVA, horse.getLocation(), 10);
 
         behindLocation.getBlock().setType(Material.FIRE);
     }
@@ -152,6 +159,8 @@ public class MamanHandlerNew implements Listener {
         restoredHorse.getInventory().setContents(savedHorse.getInventory().getContents());
         restoredHorse.setCustomNameVisible(true);
         restoredHorse.setCustomName(savedHorse.getName());
+        restoredHorse.setStyle(savedHorse.getStyle());
+        restoredHorse.setColor(savedHorse.getColor());
 
         skullHorse.remove();
         restoredHorse.addPassenger(player);

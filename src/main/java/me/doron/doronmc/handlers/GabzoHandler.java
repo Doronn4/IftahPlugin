@@ -1,5 +1,8 @@
 package me.doron.doronmc.handlers;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -17,13 +20,14 @@ import org.bukkit.util.Vector;
 import org.bukkit.potion.PotionEffect;
 
 public class GabzoHandler implements Listener {
-    private final String NAME = "Itay3108";
-    private final double COOLDOWN = 40 * 20;
-    private final String ITEM_NAME = "3108";
+    private final String NAME = "itay3108";
+    private final double COOLDOWN = 5 * 20;
+    private final TextComponent ITEM_NAME = Component.text("3108").color(NamedTextColor.GOLD);
+    private final double TIMEOUT = 15;
     private double lastUse;
     private boolean isFlying;
     private boolean isLanding;
-    private final long FLIGHT_TIME = 10 * 20;
+    private final long FLIGHT_TIME = 5 * 20;
 
     public GabzoHandler() {
         lastUse = 0;
@@ -37,18 +41,13 @@ public class GabzoHandler implements Listener {
         if (player.getName().equals(NAME) && !isFlying) {
             if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 ItemStack item = player.getInventory().getItemInMainHand();
-                if (item.getType() == Material.STICK && item.getItemMeta().getDisplayName().equals(ITEM_NAME)) {
+                if (item.getType() == Material.STICK && item.getItemMeta().displayName().equals(ITEM_NAME)) {
                     double currentTime = player.getWorld().getTime();
                     if ((currentTime - lastUse) > COOLDOWN) {
                         player.sendMessage(ChatColor.GOLD+""+ChatColor.MAGIC+"AA"+ChatColor.RESET+""+ChatColor.GOLD+""+ChatColor.UNDERLINE+""+ChatColor.ITALIC+"GABZO MODE ACTIVE"+ChatColor.RESET+""+ChatColor.GOLD+""+ChatColor.MAGIC+"AA");
                         activateFlight(player);
                         lastUse = currentTime + COOLDOWN;
                         isFlying = true;
-                        new BukkitRunnable() {
-                            public void run() {
-                                shutOffFlight(player);
-                            }
-                        }.runTaskLater(Bukkit.getPluginManager().getPlugin("DoronMC"), FLIGHT_TIME);
                     } else {
                         // Cooldown
                         player.sendMessage("Flight on cooldown.. " + ((COOLDOWN - (currentTime - lastUse)) / 20.0) + " seconds");
@@ -64,7 +63,7 @@ public class GabzoHandler implements Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_POLAR_BEAR_WARNING, 0.5F, 0.7F);
 
         double startHeight = player.getLocation().getY();
-        double heightDelta = 40;
+        double heightDelta = 100;
         double acceleration = 0.8; // acceleration in blocks per second squared
 
         stepTwoFlight(player);
@@ -80,6 +79,22 @@ public class GabzoHandler implements Listener {
                 if (player.getLocation().getY() - startHeight >= heightDelta) {
                     player.setAllowFlight(true);
                     player.setFlying(true);
+                    new BukkitRunnable() {
+                        public void run() {
+                            shutOffFlight(player);
+                        }
+                    }.runTaskLater(Bukkit.getPluginManager().getPlugin("DoronMC"), FLIGHT_TIME);
+                    Bukkit.getScheduler().cancelTask(this.getTaskId());
+                }
+
+                else if (elapsedTime > TIMEOUT) {
+                    player.setAllowFlight(true);
+                    player.setFlying(true);
+                    new BukkitRunnable() {
+                        public void run() {
+                            shutOffFlight(player);
+                        }
+                    }.runTaskLater(Bukkit.getPluginManager().getPlugin("DoronMC"), FLIGHT_TIME);
                     Bukkit.getScheduler().cancelTask(this.getTaskId());
                 }
 
@@ -99,9 +114,31 @@ public class GabzoHandler implements Listener {
         isLanding = true;
         player.setAllowFlight(false);
         player.setFlying(false);
-        player.setVelocity(new Vector(0, -4, 0));
+        accelerateDown(player);
         player.playSound(player.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5F, 1F);
         player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 15 * 20, 1, true, false, false));
+    }
+
+    private void accelerateDown(Player player) {
+        new BukkitRunnable() {
+            double dragSpeed = 0;
+            double elapsedTime = 0;
+            double acceleration = 4;
+
+            public void run() {
+                elapsedTime += 0.05; // elapsed time in seconds (update every 50 milliseconds)
+                dragSpeed += acceleration * elapsedTime; // lift speed in blocks per second
+                if (!isLanding) {
+                    player.setAllowFlight(true);
+                    player.setFlying(true);
+                    Bukkit.getScheduler().cancelTask(this.getTaskId());
+                }
+
+                else {
+                    player.setVelocity(new Vector(player.getVelocity().getX(), -dragSpeed, player.getVelocity().getZ())); // set the lift velocity
+                }
+            }
+        }.runTaskTimer(Bukkit.getPluginManager().getPlugin("DoronMC"), 0, 1);
     }
 
     private void stepTwoFlight(Player player) {
@@ -114,11 +151,21 @@ public class GabzoHandler implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
+        if (!event.getPlayer().getName().equals(NAME))
+            return;
         if (isLanding) {
             Location belowFeet = new Location(event.getTo().getWorld(), event.getTo().getX(), event.getTo().getY() - 1, event.getTo().getZ());
             if (belowFeet.getBlock().getType() != Material.AIR) {
-                event.getPlayer().removePotionEffect(PotionEffectType.SLOW_FALLING);
-                event.getPlayer().getWorld().strikeLightning(event.getPlayer().getLocation());
+
+                new BukkitRunnable() {
+                    public void run() {
+                        event.getPlayer().removePotionEffect(PotionEffectType.SLOW_FALLING);
+                    }
+                }.runTaskLater(Bukkit.getPluginManager().getPlugin("DoronMC"), 20);
+
+                event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 2 * 20, 1, true, false, false));
+
+                event.getPlayer().getWorld().strikeLightning(event.getPlayer().getLocation().subtract(0, 2, 0));
                 isLanding = false;
             }
         }
