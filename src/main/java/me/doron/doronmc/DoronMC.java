@@ -16,6 +16,7 @@ public final class DoronMC extends JavaPlugin {
         manager.registerEvents(new LiamHandler(), this);
         manager.registerEvents(new GabzoHandler(), this);
         manager.registerEvents(new ShakedHandler(), this);
+        manager.registerEvents(new DoronHandler(), this);
 
         this.getCommand("kit").setExecutor(new CommandKit());
 
